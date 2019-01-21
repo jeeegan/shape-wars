@@ -1,5 +1,5 @@
 class Game {
-  constructor(colors,width,height,frameSpeed,starsImg,skylineImg,skylineImgWidth,skylineImgHeight,circleSound,squareSound) {
+  constructor(colors,width,height,frameSpeed,starsImg,skylineImg,skylineImgWidth,skylineImgHeight,circleSound,squareSound,destroySound,laserSound) {
     this.colors = colors;
     this.width = width;
     this.height = height;
@@ -15,12 +15,15 @@ class Game {
     this.squares = [];
     this.circles = [];
     this.extraLives = [];
+    this.lasers = [];
     this.triangle = new Triangle(this.width/2,this.height*0.90,this.width*0.04,this.height*0.025,this.colors.triangleColor);
     this.points = 0;
     this.lives = 5;
     this.gameOver = false;
     this.circleSound = circleSound;
     this.squareSound = squareSound;
+    this.destroySound = destroySound;
+    this.laserSound = laserSound;
     this.paused = false;
     this.shapeScalar = 0.75;
     this.gameStarted = false;
@@ -29,6 +32,7 @@ class Game {
     this.pauseTimer = Date.now();
     this.extraLifeCounter = 0;
     this.giveExtraLife = false;
+    this.fireLaser = false;
   }
   load() {
     this.canvas.width = this.width;
@@ -51,6 +55,8 @@ class Game {
     this.points = 0;
     this.squares = [];
     this.circles = [];
+    this.extraLives = [];
+    this.lasers = [];
     this.triangle.x = this.width/2;
     this.triangle.y = this.height*0.90;
     document.body.children[0].style.borderColor = this.colors.borderColor;
@@ -103,14 +109,14 @@ class Game {
     return horizontalDelta;
   }
   updateExtraLifeCounter() {
-    if(this.extraLifeCounter > 500) {
+    if(this.extraLifeCounter > 1000) {
       this.giveExtraLife = true;
       this.extraLifeCounter = 0;
     } else {
       this.extraLifeCounter ++;
     }
   }
-  checkCrash() {
+  checkCrashSquares() {
     for(let check=0; check < this.squares.length; check++) { // check squares crash
       if((this.triangle.x - Math.floor(this.squares[check].x) >= -this.squares[check].width) &&
           (this.triangle.x - Math.floor(this.squares[check].x) <= this.squares[check].width) &&
@@ -126,6 +132,8 @@ class Game {
         },250);
       }
     }
+  }
+  checkCrashCircles() {
     for(let check=0; check < this.circles.length; check++) { // check circles crash
       if((this.triangle.x - Math.floor(this.circles[check].x) >= -this.circles[check].radius*2.5) &&
           (this.triangle.x - Math.floor(this.circles[check].x) <= this.circles[check].radius*2.5) &&
@@ -140,6 +148,46 @@ class Game {
           document.body.children[0].style.borderColor = this.colors.borderColor;
         },250);
       }
+    }
+  }
+  checkCrashExtraLives() {
+    for(let check=0; check < this.extraLives.length; check++) { // check extra lives crash
+      if((this.triangle.x - Math.floor(this.extraLives[check].x) >= -this.extraLives[check].width) &&
+          (this.triangle.x - Math.floor(this.extraLives[check].x) <= this.extraLives[check].width) &&
+          (this.triangle.y === Math.floor(this.extraLives[check].y))) {
+        if(this.lives<7){this.lives ++;} // max 6 lives
+        this.triangle.color = "white";
+        this.extraLives.splice(check,1);
+        document.body.children[0].style.borderColor = "white";
+        if(this.soundOn){this.circleSound.play();}
+        setTimeout(()=> {
+          this.triangle.color = this.colors.triangleColor;
+          document.body.children[0].style.borderColor = this.colors.borderColor;
+        },250);
+      }
+    }
+  }
+  checkCrashLasers() {
+    for(let outercheck=0; outercheck < this.squares.length; outercheck++) {
+      for(let innercheck=0; innercheck < this.lasers.length; innercheck++) {
+        if((this.lasers[innercheck].x - Math.floor(this.squares[outercheck].x) >= -this.squares[outercheck].width) &&
+          (this.lasers[innercheck].x - Math.floor(this.squares[outercheck].x) <= this.squares[outercheck].width) &&
+          (this.lasers[innercheck].y - Math.floor(this.squares[outercheck].y) >= -this.squares[outercheck].width) &&
+          (this.lasers[innercheck].y - Math.floor(this.squares[outercheck].y) <= this.squares[outercheck].width)) {
+        this.points += 5;
+        this.squares.splice(outercheck,1);
+        this.lasers.splice(innercheck,1);
+        document.body.children[0].style.borderColor = "white";
+        if(this.soundOn) {
+          this.destroySound.stop()
+          this.destroySound.play();
+        }
+        setTimeout(()=> {
+          document.body.children[0].style.borderColor = this.colors.borderColor;
+        },250);
+        break;
+      }
+    }
     }
   }
   drawGridBackground() { // draws background underneath the grid
@@ -282,6 +330,7 @@ class Game {
       }
       this.squares[sqr].draw(this.ctx);
       this.squares[sqr].moveDown(this.width, this.height);
+
     }
   }
   drawCircles() {
@@ -308,6 +357,27 @@ class Game {
       this.extraLives[0].moveDown(this.width, this.height);
       if(this.extraLives[0].checkOffCanvas(this.width,this.height)) {
         this.extraLives.splice(0,1);
+      }
+    }
+  }
+  drawLaser() {
+    if(this.lasers.length > 3) {this.fireLaser=false;}
+    if(this.fireLaser === true) {
+      this.lasers.push(new Laser(this.triangle.x,this.triangle.y,this.colors.laserColor));
+      if(this.soundOn) {this.laserSound.play();}
+      this.fireLaser = false;
+      document.body.children[0].style.borderColor = this.colors.laserColor;
+      this.triangle.color = this.colors.laserColor;
+      setTimeout(()=> {
+        document.body.children[0].style.borderColor = this.colors.borderColor;
+        this.triangle.color = this.colors.triangleColor;
+      },250);
+    }
+    for(let lasr=0; lasr < this.lasers.length; lasr++) {
+      this.lasers[lasr].draw(this.ctx);
+      this.lasers[lasr].moveUp(this.width, this.height);
+      if(this.lasers[lasr].checkOffCanvas(this.width,this.height)) {
+        this.lasers.splice(lasr,1);
       }
     }
   }
@@ -364,14 +434,22 @@ class Game {
     this.ctx.font = "20px Orbitron";
     this.ctx.strokeText("PRESS ENTER TO PLAY",this.width/2,this.height/2.5);
     this.ctx.fillText("PRESS ENTER TO PLAY",this.width/2,this.height/2.5);
+    this.ctx.textAlign = "left";
     this.ctx.font = "20px Orbitron";
-    this.ctx.fillText("CONTROLS:",this.width/2,this.height/1.6);
+    this.ctx.fillText("CONTROLS:",this.width/10,this.height/1.45);
     this.ctx.font = "15px Orbitron";
-    this.ctx.fillText("LEFT-ARROW/RIGHT-ARROW: MOVE TRIANGLE",this.width/2,this.height/1.5);
-    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/2,this.height/1.4);
-    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/2,this.height/1.3);
-    this.ctx.fillText("R KEY: RESET GAME",this.width/2,this.height/1.2);
-    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/2,this.height/1.1);
+    this.ctx.fillText("LEFT/RIGHT-ARROW: MOVE TRIANGLE",this.width/10,this.height/1.35);
+    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/10,this.height/1.3);
+    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.25);
+    this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
+    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
+    this.ctx.fillText("SPACE: FIRE!!!",this.width/10,this.height/1.1);
+    this.ctx.font = "20px Orbitron";
+    this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
+    this.ctx.font = "15px Orbitron";
+    this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
+    this.ctx.fillText("KILL(+5POINTS) OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
+    this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
     this.ctx.restore();
   }
 
@@ -382,17 +460,25 @@ class Game {
     this.ctx.shadowColor = "black";
     this.ctx.shadowOffsetX = 5;
     this.ctx.font = "80px Orbitron";
-    this.ctx.textAlign = "center"
+    this.ctx.textAlign = "center";
     this.ctx.strokeText("PAUSED",this.width/2,this.height/3);
     this.ctx.fillText("PAUSED",this.width/2,this.height/3);
+    this.ctx.textAlign = "left";
     this.ctx.font = "20px Orbitron";
-    this.ctx.fillText("CONTROLS:",this.width/2,this.height/1.6);
+    this.ctx.fillText("CONTROLS:",this.width/10,this.height/1.45);
     this.ctx.font = "15px Orbitron";
-    this.ctx.fillText("LEFT-ARROW/RIGHT-ARROW: MOVE TRIANGLE",this.width/2,this.height/1.5);
-    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/2,this.height/1.4);
-    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/2,this.height/1.3);
-    this.ctx.fillText("R KEY: RESET GAME",this.width/2,this.height/1.2);
-    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/2,this.height/1.1);
+    this.ctx.fillText("LEFT/RIGHT-ARROW: MOVE TRIANGLE",this.width/10,this.height/1.35);
+    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/10,this.height/1.3);
+    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.25);
+    this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
+    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
+    this.ctx.fillText("SPACE: FIRE!!!",this.width/10,this.height/1.1);
+    this.ctx.font = "20px Orbitron";
+    this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
+    this.ctx.font = "15px Orbitron";
+    this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
+    this.ctx.fillText("KILL(+5POINTS) OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
+    this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
     this.ctx.restore();
   }
 }

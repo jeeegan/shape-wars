@@ -17,7 +17,8 @@ const colors = {
   triangleColor : "#e13cc0", // neon pink
   textColor : "#18CAE6", // neon blue
   borderColor : "#e13cc0", // neon pink
-  gameOver : "#f95064" // red
+  gameOver : "#f95064", // red
+  laserColor : "#18CAE6", // neon blue
 }
 const width = 1000; // canvas width, other dimensions are on a fixed ratio of this
 const height = width * 0.6;
@@ -29,9 +30,11 @@ const stars = new Image();
 stars.src = "./img/stars.png";
 const circleSound = new Sound("./sounds/circle.mp3");
 const squareSound = new Sound("./sounds/square.mp3");
-var backgroundMusic = new Sound("./sounds/background.mp3",true,0.5);
+var backgroundMusic = new Sound("./sounds/background.mp3",true);
+const destroySound = new Sound("./sounds/destroy.mp3");
+const laserSound = new Sound("./sounds/laser.mp3");
 var frameSpeed = 10;
-const game = new Game(colors,width,height,frameSpeed,stars,skyline,skylineImgWidth,skylineImgHeight,circleSound,squareSound);
+const game = new Game(colors,width,height,frameSpeed,stars,skyline,skylineImgWidth,skylineImgHeight,circleSound,squareSound,destroySound,laserSound);
 
 document.onkeydown = getInput;
 
@@ -72,6 +75,9 @@ function getInput(e) { // listens for keyboard input
     case 70: // f key
       game.fullscreen();
       break;
+    case 32: // spacebar
+      game.fireLaser = true
+      break;
     default:
       // nothing yet...
   }
@@ -92,9 +98,13 @@ function renderGame() {
   game.drawSquares();
   game.drawCircles();
   game.drawExtraLives();
-  game.checkCrash();
+  game.checkCrashSquares();
+  game.checkCrashCircles();
+  game.checkCrashExtraLives();
+  game.checkCrashLasers();
   game.drawScore();
   game.drawLives();
+  game.drawLaser();
   game.checkGameOver();
   game.updateExtraLifeCounter()
   if(game.soundOn === true) {
@@ -102,7 +112,6 @@ function renderGame() {
   } else {
     backgroundMusic.stop();
   }
-  
 }
 
 function displayNextFrame(){

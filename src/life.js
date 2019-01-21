@@ -20,9 +20,9 @@ class Life {
     ctx.lineTo(this.x + this.width/2,this.y + (this.height/2));
     ctx.closePath();
     ctx.stroke();
+    ctx.globalAlpha = 0.5;
     ctx.fill();
     ctx.restore();
-    console.log("draw")
   }
   moveDown(canvasWidth, canvasHeight) {
     this.x -= this.scalar * ((canvasWidth/200) * (canvasWidth/2 - this.x)/(canvasWidth/2));
