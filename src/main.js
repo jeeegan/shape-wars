@@ -29,38 +29,52 @@ const stars = new Image();
 stars.src = "./img/stars.png";
 const circleSound = new Sound("./sounds/circle.mp3");
 const squareSound = new Sound("./sounds/square.mp3");
-var backgroundMusic = new Sound("./sounds/background.mp3",true);
-var frameSpeed = 15;
+var backgroundMusic = new Sound("./sounds/background.mp3",true,0.5);
+var frameSpeed = 10;
 const game = new Game(colors,width,height,frameSpeed,stars,skyline,skylineImgWidth,skylineImgHeight,circleSound,squareSound);
 
 document.onkeydown = getInput;
 
 function startGame() {
-  game.start();
+  game.load();
   game.calcHorizontalDelta();
   displayNextFrame();
 }
 
 setInterval(() => {
   game.frames ++;
-  if(game.frames === frameSpeed) { game.frames = 0;}
+  if(game.frames === game.frameSpeed) { game.frames = 0;}
 }, 20);
 
 function getInput(e) { // listens for keyboard input
   if(game.gameOver === true && e.keyCode === 13) {
     game.reset();
-  }
+    // enter key
+  } else if(game.gameStarted === false && e.keyCode === 13) {
+    game.start();
+  } // enter key
+  if(game.gameStarted === true && e.keyCode === 80) {
+    game.togglePauseScreen();
+  } // enter key
   switch(e.keyCode) {
-    case 37: 
+    case 37:  // left arrow
       game.triangle.moveLeft(game.width);
       break;
-    case 39: 
+    case 39: // right arrow
       game.triangle.moveRight(game.width);
       break;
-    case 32:
-      backgroundMusic.play();
+    case 83: // s key
+      game.toggleSound();
+      break;
+    case 82: // r key
+      game.reset();
+      break;
+    case 70: // f key
+      game.fullscreen();
+      break;
+    default:
+      // nothing yet...
   }
-  console.log(e.keyCode);
 }
 
 function renderGame() {
@@ -73,18 +87,45 @@ function renderGame() {
   game.drawSun();
   game.drawSkyline();
   game.drawHorizon();
+  game.drawTimer();
   game.drawTriangle();
   game.drawSquares();
   game.drawCircles();
+  game.drawExtraLives();
   game.checkCrash();
   game.drawScore();
   game.drawLives();
   game.checkGameOver();
+  game.updateExtraLifeCounter()
+  if(game.soundOn === true) {
+    backgroundMusic.play();
+  } else {
+    backgroundMusic.stop();
+  }
+  
 }
 
 function displayNextFrame(){
-  if(game.gameOver === false){
+  if(game.gameStarted === false) {
+    game.clear();
+    game.drawGridBackground();
+    game.drawHorizontalLines();
+    game.drawGrid();
+    game.drawSky();
+    game.drawStars();
+    game.drawHorizon();
+    game.drawStartScreen();
+  } else if(game.gameOver === false && game.paused === false){
     renderGame();
+  } else if(game.paused === true) {
+    game.clear();
+    game.drawGridBackground();
+    game.drawHorizontalLines();
+    game.drawGrid();
+    game.drawSky();
+    game.drawStars();
+    game.drawHorizon();
+    game.drawPauseScreen();
   } else {
     game.clear();
     game.drawGridBackground();

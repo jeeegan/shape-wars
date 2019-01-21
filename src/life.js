@@ -1,4 +1,4 @@
-class Square {
+class Life {
   constructor(x,y,w,h,col,lineWidth=1,scalar=0.75) {
     this.x = x;
     this.y = y;
@@ -14,10 +14,15 @@ class Square {
     ctx.fillStyle = this.color;
     ctx.strokeStyle = this.color;
     ctx.lineJoin = 'round';
-    ctx.strokeRect(this.x-(this.width/2),this.y-(this.height/2),this.width,this.height);
-    ctx.globalAlpha = 0.5;
-    ctx.fillRect(this.x-(this.width/2),this.y-(this.height/2),this.width,this.height);
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y - (this.height/2));
+    ctx.lineTo(this.x - this.width/2,this.y + (this.height/2));
+    ctx.lineTo(this.x + this.width/2,this.y + (this.height/2));
+    ctx.closePath();
+    ctx.stroke();
+    ctx.fill();
     ctx.restore();
+    console.log("draw")
   }
   moveDown(canvasWidth, canvasHeight) {
     this.x -= this.scalar * ((canvasWidth/200) * (canvasWidth/2 - this.x)/(canvasWidth/2));

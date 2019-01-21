@@ -1,9 +1,9 @@
 class Game {
-  constructor(colors,width, height,frameSpeed,starsImg,skylineImg,skylineImgWidth,skylineImgHeight,circleSound,squareSound) {
+  constructor(colors,width,height,frameSpeed,starsImg,skylineImg,skylineImgWidth,skylineImgHeight,circleSound,squareSound) {
     this.colors = colors;
     this.width = width;
     this.height = height;
-    this.canvas = document.createElement("canvas")
+    this.canvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d");
     this.frames = 0;
     this.frameSpeed = frameSpeed;
@@ -14,6 +14,7 @@ class Game {
     this.skylineImgHeight = skylineImgHeight;
     this.squares = [];
     this.circles = [];
+    this.extraLives = [];
     this.triangle = new Triangle(this.width/2,this.height*0.90,this.width*0.04,this.height*0.025,this.colors.triangleColor);
     this.points = 0;
     this.lives = 5;
@@ -21,17 +22,49 @@ class Game {
     this.circleSound = circleSound;
     this.squareSound = squareSound;
     this.paused = false;
+    this.shapeScalar = 0.75;
+    this.gameStarted = false;
+    this.soundOn = true;
+    this.startTime = Date.now();
+    this.pauseTimer = Date.now();
+    this.extraLifeCounter = 0;
+    this.giveExtraLife = false;
   }
-  start() {
+  load() {
     this.canvas.width = this.width;
     this.canvas.height = this.height;
     document.body.insertBefore(this.canvas, document.getElementById("game-container"));
   }
-  reset() {
+  start() {
     this.gameOver = false;
+    this.gameStarted = true;
     this.lives = 5;
     this.points = 0;
+    this.startTime = Date.now();
   }
+  reset() {
+    this.gameStarted = false;
+    this.gameOver = false;
+    this.paused = false;
+    this.soundOn = true;
+    this.lives = 5;
+    this.points = 0;
+    this.squares = [];
+    this.circles = [];
+    this.triangle.x = this.width/2;
+    this.triangle.y = this.height*0.90;
+    document.body.children[0].style.borderColor = this.colors.borderColor;
+  }
+  fullscreen(){
+    var canv = document.body.children[0];
+
+    if(canv.webkitRequestFullScreen) {
+        canv.webkitRequestFullScreen();
+    }
+   else {
+      canv.mozRequestFullScreen();
+   }            
+}
   checkGameOver() {
     if(this.lives === 0){
       this.gameOver = true;
@@ -39,6 +72,22 @@ class Game {
   }
   clear() {
     this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+  }
+  toggleSound() {
+    if(this.soundOn) {
+      this.soundOn = false;
+    } else {
+      this.soundOn = true;
+    }
+  }
+  togglePauseScreen() {
+    if(this.paused) {
+      this.startTime += (Date.now() - this.pauseTimer);
+      this.paused = false;
+    } else {
+      this.pauseTimer = Date.now();
+      this.paused = true;
+    }
   }
   calcHorizontalDelta() { // calculates y-delta for horizontal lines
     var lineStops = []
@@ -53,6 +102,14 @@ class Game {
     }
     return horizontalDelta;
   }
+  updateExtraLifeCounter() {
+    if(this.extraLifeCounter > 500) {
+      this.giveExtraLife = true;
+      this.extraLifeCounter = 0;
+    } else {
+      this.extraLifeCounter ++;
+    }
+  }
   checkCrash() {
     for(let check=0; check < this.squares.length; check++) { // check squares crash
       if((this.triangle.x - Math.floor(this.squares[check].x) >= -this.squares[check].width) &&
@@ -62,7 +119,7 @@ class Game {
         this.squares.splice(check,1);
         this.triangle.color = this.colors.squareColor;
         document.body.children[0].style.borderColor = this.colors.squareColor;
-        this.squareSound.play();
+        if(this.soundOn) {this.squareSound.play();}
         setTimeout(()=> {
           this.triangle.color = this.colors.triangleColor;
           document.body.children[0].style.borderColor = this.colors.borderColor;
@@ -70,14 +127,14 @@ class Game {
       }
     }
     for(let check=0; check < this.circles.length; check++) { // check circles crash
-      if((this.triangle.x - Math.floor(this.circles[check].x) >= -this.circles[check].radius*2) &&
-          (this.triangle.x - Math.floor(this.circles[check].x) <= this.circles[check].radius*2) &&
+      if((this.triangle.x - Math.floor(this.circles[check].x) >= -this.circles[check].radius*2.5) &&
+          (this.triangle.x - Math.floor(this.circles[check].x) <= this.circles[check].radius*2.5) &&
           (this.triangle.y === Math.floor(this.circles[check].y))) {
         this.points += 5;
         this.triangle.color = this.colors.circleColor;
         this.circles.splice(check,1);
         document.body.children[0].style.borderColor = this.colors.circleColor;
-        this.circleSound.play();
+        if(this.soundOn){this.circleSound.play();}
         setTimeout(()=> {
           this.triangle.color = this.colors.triangleColor;
           document.body.children[0].style.borderColor = this.colors.borderColor;
@@ -106,7 +163,7 @@ class Game {
     var offsetSum = 0;
     for (let yOffset = 0; yOffset < 10; yOffset++) {
       this.ctx.beginPath();
-      this.ctx.moveTo(0,(this.height/2 + (yOffset**2) + offsetSum + (this.frames * (this.horizontalDelta[yOffset]/frameSpeed))));
+      this.ctx.moveTo(0,(this.height/2 + (yOffset**2) + offsetSum + (this.frames * (this.horizontalDelta[yOffset]/this.frameSpeed))));
       this.ctx.lineTo(this.width, (this.height/2 + (yOffset**2) + offsetSum + (this.frames * (this.horizontalDelta[yOffset]/this.frameSpeed))));
       this.ctx.stroke();
       offsetSum += yOffset**2;
@@ -194,13 +251,30 @@ class Game {
     this.ctx.stroke();
     this.ctx.restore();
   }
+  drawTimer() {
+    this.ctx.save();
+    this.ctx.textAlign = "left";
+    this.ctx.fillStyle = this.colors.textColor;
+    this.ctx.font = "15px Orbitron";
+    this.ctx.fillText(this.convertTime(Date.now() - this.startTime), this.width-this.width/6, this.height/18);
+    this.ctx.restore();
+  }
+  convertTime(duration) {
+    var milliseconds = parseInt((duration%1000)/100);
+    var  seconds = parseInt((duration/1000)%60);
+    var  minutes = parseInt((duration/(1000*60))%60);
+    minutes = (minutes < 10) ? "0" + minutes : minutes;
+    seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+    return "TIME: " + minutes + ":" + seconds + "." + milliseconds;
+  }
   drawTriangle() {
     this.triangle.draw(this.ctx,this.width);
   }
   drawSquares() {
-    if(this.frames === 0 || this.frames === 10 || this.frames === 5 || this.frames === 15) {
+    if(this.frames % 5 === 0) {
       this.squares.push(new Square((Math.floor(Math.random()*this.width/3)+this.width/3),
-      this.height/2,this.width/500,this.width/500,this.colors.squareColor/*,this.shapeSpeed*/));
+      this.height/2,this.width/500,this.width/500,this.colors.squareColor,this.shapeScalar));
     }
     for(let sqr=0; sqr < this.squares.length; sqr++) {
       if(this.squares[sqr].checkOffCanvas(this.width,this.height)) {
@@ -213,7 +287,7 @@ class Game {
   drawCircles() {
     if(this.frames === 0) {
       this.circles.push(new Circle((Math.floor(Math.random()*this.width/3)+this.width/3),
-      this.height/2,this.width/300,this.colors.circleColor/*,this.shapeSpeed*/));
+      this.height/2,this.width/300,this.colors.circleColor,this.shapeScalar));
     }
     for(let circl=0; circl < this.circles.length; circl++) {
       if(this.circles[circl].checkOffCanvas(this.width,this.height)) {
@@ -223,10 +297,25 @@ class Game {
       this.circles[circl].moveDown(this.width, this.height);
     }
   }
+  drawExtraLives() {
+    if(this.giveExtraLife === true) {
+      this.extraLives.push(new Life((Math.floor(Math.random()*this.width/3)+this.width/3),
+      this.height/2,this.width/500,this.width/500,this.colors.triangleColor,this.shapeScalar));
+      this.giveExtraLife = false;
+    }
+    if(this.extraLives.length > 0) {
+      this.extraLives[0].draw(this.ctx);
+      this.extraLives[0].moveDown(this.width, this.height);
+      if(this.extraLives[0].checkOffCanvas(this.width,this.height)) {
+        this.extraLives.splice(0,1);
+      }
+    }
+  }
   drawScore() {
     this.ctx.save();
+    this.ctx.textAlign = "left";
     this.ctx.fillStyle = this.colors.textColor;
-    this.ctx.font = "20px Orbitron";
+    this.ctx.font = "15px Orbitron";
     this.ctx.fillText(`POINTS: ${this.points}`, this.width-this.width/6, this.height/12);
     this.ctx.restore();
   }
@@ -261,5 +350,49 @@ class Game {
     this.ctx.fillText("PRESS ENTER TO PLAY AGAIN",this.width/2,this.height/2.5);
     this.ctx.restore();
     document.body.children[0].style.borderColor = this.colors.squareColor;
+  }
+  drawStartScreen() {
+    this.ctx.save();
+    this.ctx.fillStyle = this.colors.textColor;
+    this.ctx.strokeStyle = "black";
+    this.ctx.shadowColor = "black";
+    this.ctx.shadowOffsetX = 5;
+    this.ctx.font = "80px Orbitron";
+    this.ctx.textAlign = "center"
+    this.ctx.strokeText("SHAPE WARS",this.width/2,this.height/3);
+    this.ctx.fillText("SHAPE WARS",this.width/2,this.height/3);
+    this.ctx.font = "20px Orbitron";
+    this.ctx.strokeText("PRESS ENTER TO PLAY",this.width/2,this.height/2.5);
+    this.ctx.fillText("PRESS ENTER TO PLAY",this.width/2,this.height/2.5);
+    this.ctx.font = "20px Orbitron";
+    this.ctx.fillText("CONTROLS:",this.width/2,this.height/1.6);
+    this.ctx.font = "15px Orbitron";
+    this.ctx.fillText("LEFT-ARROW/RIGHT-ARROW: MOVE TRIANGLE",this.width/2,this.height/1.5);
+    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/2,this.height/1.4);
+    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/2,this.height/1.3);
+    this.ctx.fillText("R KEY: RESET GAME",this.width/2,this.height/1.2);
+    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/2,this.height/1.1);
+    this.ctx.restore();
+  }
+
+  drawPauseScreen() {
+    this.ctx.save();
+    this.ctx.fillStyle = this.colors.textColor;
+    this.ctx.strokeStyle = "black";
+    this.ctx.shadowColor = "black";
+    this.ctx.shadowOffsetX = 5;
+    this.ctx.font = "80px Orbitron";
+    this.ctx.textAlign = "center"
+    this.ctx.strokeText("PAUSED",this.width/2,this.height/3);
+    this.ctx.fillText("PAUSED",this.width/2,this.height/3);
+    this.ctx.font = "20px Orbitron";
+    this.ctx.fillText("CONTROLS:",this.width/2,this.height/1.6);
+    this.ctx.font = "15px Orbitron";
+    this.ctx.fillText("LEFT-ARROW/RIGHT-ARROW: MOVE TRIANGLE",this.width/2,this.height/1.5);
+    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/2,this.height/1.4);
+    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/2,this.height/1.3);
+    this.ctx.fillText("R KEY: RESET GAME",this.width/2,this.height/1.2);
+    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/2,this.height/1.1);
+    this.ctx.restore();
   }
 }
