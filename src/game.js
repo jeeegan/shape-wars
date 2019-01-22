@@ -391,6 +391,7 @@ class Game {
         document.body.children[0].style.borderColor = this.colors.borderColor;
         this.triangle.color = this.colors.triangleColor;
       },250);
+      this.points --;
     }
     for(let lasr=0; lasr < this.lasers.length; lasr++) {
       this.lasers[lasr].draw(this.ctx);
