@@ -189,11 +189,6 @@ class Game {
           (this.lasers[innercheck].x - Math.floor(this.squares[outercheck].x) <= this.squares[outercheck].width) &&
           (this.lasers[innercheck].y - Math.floor(this.squares[outercheck].y) >= -this.squares[outercheck].width) &&
           (this.lasers[innercheck].y - Math.floor(this.squares[outercheck].y) <= this.squares[outercheck].width)) {
-        if(this.heroMode) {
-          this.points += 10;
-        } else {
-          this.points += 5;
-        }
         this.squares.splice(outercheck,1);
         this.lasers.splice(innercheck,1);
         document.body.children[0].style.borderColor = "white";
@@ -479,12 +474,12 @@ class Game {
     this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
     this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
     this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.1);
-    this.ctx.fillText("SPACE-BAR: FIRE!!!",this.width/10,this.height/1.05);
+    this.ctx.fillText("SPACE-BAR: FIRE!!! (COSTS 1 POINT)",this.width/10,this.height/1.05);
     this.ctx.font = "20px Orbitron";
     this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
     this.ctx.font = "15px Orbitron";
     this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
-    this.ctx.fillText("KILL(+5POINTS) OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
+    this.ctx.fillText("KILL OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
     this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
     this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.20);
     this.ctx.restore();
@@ -510,12 +505,12 @@ class Game {
     this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
     this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
     this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.1);
-    this.ctx.fillText("SPACE-BAR: FIRE!!!",this.width/10,this.height/1.05);
+    this.ctx.fillText("SPACE-BAR: FIRE!!! (COSTS 1 POINT)",this.width/10,this.height/1.05);
     this.ctx.font = "20px Orbitron";
     this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
     this.ctx.font = "15px Orbitron";
     this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
-    this.ctx.fillText("KILL(+5POINTS) OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
+    this.ctx.fillText("KILL OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
     this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
     this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.20);
     this.ctx.restore();
