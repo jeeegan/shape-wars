@@ -51,6 +51,7 @@ class Game {
   }
   reset() {
     this.gameStarted = false;
+    this.hardMode = false;
     this.gameOver = false;
     this.paused = false;
     this.soundOn = true;
