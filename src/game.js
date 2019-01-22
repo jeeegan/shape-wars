@@ -380,7 +380,7 @@ class Game {
     }
   }
   drawLaser() {
-    if(this.lasers.length > 1) {this.fireLaser=false;}
+    if(this.lasers.length > 0) {this.fireLaser=false;}
     if(this.fireLaser === true) {
       this.lasers.push(new Laser(this.triangle.x,this.triangle.y,this.colors.laserColor));
       if(this.soundOn) {this.laserSound.play();}

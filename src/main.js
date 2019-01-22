@@ -128,6 +128,11 @@ function displayNextFrame(){
     game.drawStars();
     game.drawHorizon();
     game.drawStartScreen();
+    if(game.soundOn === true) {
+      backgroundMusic.play();
+    } else {
+      backgroundMusic.stop();
+    }
   } else if(game.gameOver === false && game.paused === false){
     renderGame();
   } else if(game.paused === true) {
@@ -139,6 +144,11 @@ function displayNextFrame(){
     game.drawStars();
     game.drawHorizon();
     game.drawPauseScreen();
+    if(game.soundOn === true) {
+      backgroundMusic.play();
+    } else {
+      backgroundMusic.stop();
+    }
   } else {
     game.clear();
     game.drawGridBackground();
@@ -148,6 +158,11 @@ function displayNextFrame(){
     game.drawStars();
     game.drawHorizon();
     game.drawGameOver();
+    if(game.soundOn === true) {
+      backgroundMusic.play();
+    } else {
+      backgroundMusic.stop();
+    }
   }
   window.requestAnimationFrame(displayNextFrame);
 }
