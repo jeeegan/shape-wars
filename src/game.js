@@ -61,6 +61,7 @@ class Game {
     this.circles = [];
     this.extraLives = [];
     this.lasers = [];
+    this.hardMode = false;
     this.triangle.x = this.width/2;
     this.triangle.y = this.height*0.90;
     document.body.children[0].style.borderColor = this.colors.borderColor;
