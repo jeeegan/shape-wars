@@ -380,7 +380,7 @@ class Game {
     }
   }
   drawLaser() {
-    if(this.lasers.length > 1) {this.fireLaser=false;}
+    if(this.lasers.length > 0) {this.fireLaser=false;}
     if(this.fireLaser === true) {
       this.lasers.push(new Laser(this.triangle.x,this.triangle.y,this.colors.laserColor));
       if(this.soundOn) {this.laserSound.play();}
@@ -391,6 +391,7 @@ class Game {
         document.body.children[0].style.borderColor = this.colors.borderColor;
         this.triangle.color = this.colors.triangleColor;
       },250);
+      this.points --;
     }
     for(let lasr=0; lasr < this.lasers.length; lasr++) {
       this.lasers[lasr].draw(this.ctx);
