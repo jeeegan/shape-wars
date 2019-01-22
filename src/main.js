@@ -78,6 +78,9 @@ function getInput(e) { // listens for keyboard input
     case 32: // spacebar
       game.fireLaser = true
       break;
+    case 72: // h key
+      game.toggleHeroMode();
+      break;
     default:
       // nothing yet...
   }
@@ -103,6 +106,7 @@ function renderGame() {
   game.checkCrashExtraLives();
   game.checkCrashLasers();
   game.drawScore();
+  game.drawHeroMode();
   game.drawLives();
   game.drawLaser();
   game.checkGameOver();

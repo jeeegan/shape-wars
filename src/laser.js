@@ -25,7 +25,7 @@ class Laser {
     return(
       this.x < 0 ||
       this.x > canvasWidth ||
-      this.y < canvasHeight/2
+      this.y < canvasHeight/1.5
     );
   }
 }

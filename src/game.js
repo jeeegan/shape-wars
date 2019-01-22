@@ -29,10 +29,13 @@ class Game {
     this.gameStarted = false;
     this.soundOn = true;
     this.startTime = Date.now();
+    this.endTime = Date.now();
     this.pauseTimer = Date.now();
     this.extraLifeCounter = 0;
     this.giveExtraLife = false;
     this.fireLaser = false;
+    this.heroMode = false;
+  
   }
   load() {
     this.canvas.width = this.width;
@@ -63,21 +66,28 @@ class Game {
   }
   fullscreen(){
     var canv = document.body.children[0];
-
     if(canv.webkitRequestFullScreen) {
         canv.webkitRequestFullScreen();
     }
    else {
       canv.mozRequestFullScreen();
    }            
-}
+  }
   checkGameOver() {
     if(this.lives === 0){
       this.gameOver = true;
+      this.endTime = Date.now();
     }
   }
   clear() {
     this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
+  }
+  toggleHeroMode() {
+    if(this.heroMode) {
+      this.heroMode = false;
+    } else {
+      this.heroMode = true;
+    }
   }
   toggleSound() {
     if(this.soundOn) {
@@ -138,7 +148,11 @@ class Game {
       if((this.triangle.x - Math.floor(this.circles[check].x) >= -this.circles[check].radius*2.5) &&
           (this.triangle.x - Math.floor(this.circles[check].x) <= this.circles[check].radius*2.5) &&
           (this.triangle.y === Math.floor(this.circles[check].y))) {
-        this.points += 5;
+        if(this.heroMode) {
+          this.points += 10;
+        } else {
+          this.points += 5;
+        }
         this.triangle.color = this.colors.circleColor;
         this.circles.splice(check,1);
         document.body.children[0].style.borderColor = this.colors.circleColor;
@@ -155,7 +169,7 @@ class Game {
       if((this.triangle.x - Math.floor(this.extraLives[check].x) >= -this.extraLives[check].width) &&
           (this.triangle.x - Math.floor(this.extraLives[check].x) <= this.extraLives[check].width) &&
           (this.triangle.y === Math.floor(this.extraLives[check].y))) {
-        if(this.lives<7){this.lives ++;} // max 6 lives
+        if(this.lives<6){this.lives ++;} // max 6 lives
         this.triangle.color = "white";
         this.extraLives.splice(check,1);
         document.body.children[0].style.borderColor = "white";
@@ -174,14 +188,15 @@ class Game {
           (this.lasers[innercheck].x - Math.floor(this.squares[outercheck].x) <= this.squares[outercheck].width) &&
           (this.lasers[innercheck].y - Math.floor(this.squares[outercheck].y) >= -this.squares[outercheck].width) &&
           (this.lasers[innercheck].y - Math.floor(this.squares[outercheck].y) <= this.squares[outercheck].width)) {
-        this.points += 5;
+        if(this.heroMode) {
+          this.points += 10;
+        } else {
+          this.points += 5;
+        }
         this.squares.splice(outercheck,1);
         this.lasers.splice(innercheck,1);
         document.body.children[0].style.borderColor = "white";
-        if(this.soundOn) {
-          this.destroySound.stop()
-          this.destroySound.play();
-        }
+        if(this.soundOn) {this.destroySound.play();}
         setTimeout(()=> {
           document.body.children[0].style.borderColor = this.colors.borderColor;
         },250);
@@ -324,6 +339,10 @@ class Game {
       this.squares.push(new Square((Math.floor(Math.random()*this.width/3)+this.width/3),
       this.height/2,this.width/500,this.width/500,this.colors.squareColor,this.shapeScalar));
     }
+    if((this.frames  === 5 || this.frames === 10) && this.heroMode === true) {
+      this.squares.push(new Square((Math.floor(Math.random()*this.width/3)+this.width/3),
+      this.height/2,this.width/500,this.width/500,this.colors.squareColor,this.shapeScalar));
+    }
     for(let sqr=0; sqr < this.squares.length; sqr++) {
       if(this.squares[sqr].checkOffCanvas(this.width,this.height)) {
         this.squares.splice(sqr,1);
@@ -361,7 +380,7 @@ class Game {
     }
   }
   drawLaser() {
-    if(this.lasers.length > 3) {this.fireLaser=false;}
+    if(this.lasers.length > 1) {this.fireLaser=false;}
     if(this.fireLaser === true) {
       this.lasers.push(new Laser(this.triangle.x,this.triangle.y,this.colors.laserColor));
       if(this.soundOn) {this.laserSound.play();}
@@ -388,6 +407,16 @@ class Game {
     this.ctx.font = "15px Orbitron";
     this.ctx.fillText(`POINTS: ${this.points}`, this.width-this.width/6, this.height/12);
     this.ctx.restore();
+  }
+  drawHeroMode() {
+    if(this.heroMode) {
+      this.ctx.save();
+      this.ctx.textAlign = "center";
+      this.ctx.fillStyle = this.colors.textColor;
+      this.ctx.font = "20px Orbitron";
+      this.ctx.fillText("HERO MODE", this.width/2, this.height/12);
+      this.ctx.restore();
+    }
   }
   drawLives() {
       if(this.lives > 0) {
@@ -418,6 +447,10 @@ class Game {
     this.ctx.font = "20px Orbitron";
     this.ctx.strokeText("PRESS ENTER TO PLAY AGAIN",this.width/2,this.height/2.5);
     this.ctx.fillText("PRESS ENTER TO PLAY AGAIN",this.width/2,this.height/2.5);
+    this.ctx.font = "20px Orbitron";
+    this.ctx.shadowOffsetX = 0;
+    this.ctx.fillText(this.convertTime(this.endTime-this.startTime)
+     + "    POINTS: " + this.points,this.width/2,this.height/2.25);
     this.ctx.restore();
     document.body.children[0].style.borderColor = this.colors.squareColor;
   }
@@ -443,13 +476,15 @@ class Game {
     this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.25);
     this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
     this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
-    this.ctx.fillText("SPACE: FIRE!!!",this.width/10,this.height/1.1);
+    this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.1);
+    this.ctx.fillText("SPACE-BAR: FIRE!!!",this.width/10,this.height/1.05);
     this.ctx.font = "20px Orbitron";
     this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
     this.ctx.font = "15px Orbitron";
     this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
     this.ctx.fillText("KILL(+5POINTS) OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
     this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
+    this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.20);
     this.ctx.restore();
   }
 
@@ -472,13 +507,15 @@ class Game {
     this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.25);
     this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
     this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
-    this.ctx.fillText("SPACE: FIRE!!!",this.width/10,this.height/1.1);
+    this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.1);
+    this.ctx.fillText("SPACE-BAR: FIRE!!!",this.width/10,this.height/1.05);
     this.ctx.font = "20px Orbitron";
     this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
     this.ctx.font = "15px Orbitron";
     this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
     this.ctx.fillText("KILL(+5POINTS) OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
     this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
+    this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.20);
     this.ctx.restore();
   }
 }
