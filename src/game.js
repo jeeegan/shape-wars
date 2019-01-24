@@ -1,5 +1,5 @@
 class Game {
-  constructor(colors,width,height,frameSpeed,starsImg,skylineImg,skylineImgWidth,skylineImgHeight,circleSound,squareSound,destroySound,laserSound) {
+  constructor(colors,width,height,frameSpeed,starsImg,skylineImg,skylineImgWidth,skylineImgHeight,backgroundMusic,circleSound,squareSound,destroySound,laserSound) {
     this.colors = colors;
     this.width = width;
     this.height = height;
@@ -20,6 +20,7 @@ class Game {
     this.points = 0;
     this.lives = 5;
     this.gameOver = false;
+    this.backgroundMusic = backgroundMusic;
     this.circleSound = circleSound;
     this.squareSound = squareSound;
     this.destroySound = destroySound;
@@ -51,7 +52,7 @@ class Game {
   }
   reset() {
     this.gameStarted = false;
-    this.hardMode = false;
+    this.heroMode = false;
     this.gameOver = false;
     this.paused = false;
     this.soundOn = true;
@@ -61,9 +62,9 @@ class Game {
     this.circles = [];
     this.extraLives = [];
     this.lasers = [];
-    this.hardMode = false;
     this.triangle.x = this.width/2;
     this.triangle.y = this.height*0.90;
+    this.triangle.color = this.colors.triangleColor;
     document.body.children[0].style.borderColor = this.colors.borderColor;
   }
   fullscreen(){
@@ -94,7 +95,7 @@ class Game {
   toggleAltTheme() {
     if(this.altTheme) {
       this.altTheme = false;
-    } else {
+    } else { 
       this.altTheme = true;
     }
   }
@@ -118,7 +119,7 @@ class Game {
     var lineStops = []
     var offsetSum = 0;
     const horizontalDelta = []
-    for (let line = 0; line < 11; line++) { // calc stop positions +1 off-canvas
+    for (let line = 0; line <11; line++) { // calc stop positions +1 off-canvas
       lineStops.push(height/2 + (line**2) + offsetSum + this.frames);
       offsetSum += line**2;
     }
@@ -477,22 +478,23 @@ class Game {
     this.ctx.fillText("PRESS ENTER TO PLAY",this.width/2,this.height/2.5);
     this.ctx.textAlign = "left";
     this.ctx.font = "20px Orbitron";
-    this.ctx.fillText("CONTROLS:",this.width/10,this.height/1.45);
+    this.ctx.fillText("CONTROLS:",this.width/10,this.height/1.5);
     this.ctx.font = "15px Orbitron";
-    this.ctx.fillText("LEFT/RIGHT-ARROW: MOVE TRIANGLE",this.width/10,this.height/1.35);
-    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/10,this.height/1.3);
-    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.25);
-    this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
-    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
-    this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.1);
-    this.ctx.fillText("SPACE-BAR: FIRE!!! (COSTS 1 POINT)",this.width/10,this.height/1.05);
+    this.ctx.fillText("LEFT/RIGHT-ARROW: MOVE TRIANGLE",this.width/10,this.height/1.4);
+    this.ctx.fillText("SPACE-BAR: FIRE!!! (COSTS 1 POINT)",this.width/10,this.height/1.35);
+    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.3);
+    this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.25);
+    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.2);
+    this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.15);
+    this.ctx.fillText("A KEY: APOCALYPSE THEME",this.width/10,this.height/1.1);
+    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/10,this.height/1.05);
     this.ctx.font = "20px Orbitron";
-    this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
+    this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.5);
     this.ctx.font = "15px Orbitron";
-    this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
-    this.ctx.fillText("KILL OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
-    this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
-    this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.20);
+    this.ctx.fillText("COLLECT CIRCLES (+5POINTS)",this.width/1.75,this.height/1.4);
+    this.ctx.fillText("KILL OR AVOID SQUARES",this.width/1.75,this.height/1.35);
+    this.ctx.fillText("TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.3);
+    this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.25);
     this.ctx.restore();
   }
 
@@ -508,22 +510,23 @@ class Game {
     this.ctx.fillText("PAUSED",this.width/2,this.height/3);
     this.ctx.textAlign = "left";
     this.ctx.font = "20px Orbitron";
-    this.ctx.fillText("CONTROLS:",this.width/10,this.height/1.45);
+    this.ctx.fillText("CONTROLS:",this.width/10,this.height/1.5);
     this.ctx.font = "15px Orbitron";
-    this.ctx.fillText("LEFT/RIGHT-ARROW: MOVE TRIANGLE",this.width/10,this.height/1.35);
-    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/10,this.height/1.3);
-    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.25);
-    this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.2);
-    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.15);
-    this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.1);
-    this.ctx.fillText("SPACE-BAR: FIRE!!! (COSTS 1 POINT)",this.width/10,this.height/1.05);
+    this.ctx.fillText("LEFT/RIGHT-ARROW: MOVE TRIANGLE",this.width/10,this.height/1.4);
+    this.ctx.fillText("SPACE-BAR: FIRE!!! (COSTS 1 POINT)",this.width/10,this.height/1.35);
+    this.ctx.fillText("P KEY: PAUSE/UNPAUSE GAME",this.width/10,this.height/1.3);
+    this.ctx.fillText("R KEY: RESET GAME",this.width/10,this.height/1.25);
+    this.ctx.fillText("F KEY: GO FULL SCREEN (ESC TO EXIT)",this.width/10,this.height/1.2);
+    this.ctx.fillText("H KEY: HERO MODE",this.width/10,this.height/1.15);
+    this.ctx.fillText("A KEY: APOCALYPSE THEME",this.width/10,this.height/1.1);
+    this.ctx.fillText("S KEY: TOGGLE SOUND",this.width/10,this.height/1.05);
     this.ctx.font = "20px Orbitron";
-    this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.45);
+    this.ctx.fillText("GAMEPLAY:",this.width/1.75,this.height/1.5);
     this.ctx.font = "15px Orbitron";
-    this.ctx.fillText("COLLECT GREEN CIRCLES (+5POINTS)",this.width/1.75,this.height/1.35);
-    this.ctx.fillText("KILL OR AVOID RED SQUARES",this.width/1.75,this.height/1.3);
-    this.ctx.fillText("PINK TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.25);
-    this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.20);
+    this.ctx.fillText("COLLECT CIRCLES (+5POINTS)",this.width/1.75,this.height/1.4);
+    this.ctx.fillText("KILL OR AVOID SQUARES",this.width/1.75,this.height/1.35);
+    this.ctx.fillText("TRIANGLES = EXTRA LIFE (MAX 6)",this.width/1.75,this.height/1.3);
+    this.ctx.fillText("HEROES GET DOUBLE POINTS!",this.width/1.75,this.height/1.25);
     this.ctx.restore();
   }
 }

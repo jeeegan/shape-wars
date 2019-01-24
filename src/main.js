@@ -29,18 +29,18 @@ const colorsAlt = {
   skyColor2 : "black", 
   skyColor3 : "red" ,
   sunColor1 : "red", 
-  sunColor2 : "red", // orange
+  sunColor2 : "red", 
   sunColor3 : "#f07850", // orange
   sunColor4 : "#f07850", // yellow
-  skylineShadowColor : "red", // neon pink
-  horizonColor : "red", // neon blue
+  skylineShadowColor : "red",
+  horizonColor : "red", 
   squareColor : "#ea1136", // neon red
-  circleColor : "#39ff14", // neon green
-  triangleColor : "#e13cc0", // neon pink
-  textColor : "white", // neon blue
-  borderColor : "red", // neon pink
-  gameOver : "white", // red
-  laserColor : "#18CAE6", // neon blue
+  circleColor : "white",
+  triangleColor : "white",
+  textColor : "white",
+  borderColor : "red",
+  gameOver : "white", 
+  laserColor : "white",
 }
 const width = 1000; // canvas width, other dimensions are on a fixed ratio of this
 const height = width * 0.6;
@@ -55,10 +55,11 @@ stars.src = "./img/stars.png";
 const circleSound = new Sound("./sounds/circle.mp3");
 const squareSound = new Sound("./sounds/square.mp3");
 var backgroundMusic = new Sound("./sounds/background.mp3",true);
+var backgroundMusicAlt = new Sound("./sounds/backgroundAlt.mp3",true);
 const destroySound = new Sound("./sounds/destroy.mp3");
 const laserSound = new Sound("./sounds/laser.mp3");
 var frameSpeed = 10;
-const game = new Game(colors,width,height,frameSpeed,stars,skyline,skylineImgWidth,skylineImgHeight,circleSound,squareSound,destroySound,laserSound);
+const game = new Game(colors,width,height,frameSpeed,stars,skyline,skylineImgWidth,skylineImgHeight,backgroundMusic,circleSound,squareSound,destroySound,laserSound);
 
 document.onkeydown = getInput;
 
@@ -94,6 +95,10 @@ function getInput(e) { // listens for keyboard input
       game.toggleSound();
       break;
     case 82: // r key
+      game.backgroundMusic.stop();
+      game.backgroundMusic = backgroundMusic;
+      game.colors = colors;
+      game.altTheme = false;
       game.reset();
       break;
     case 70: // f key
@@ -108,12 +113,14 @@ function getInput(e) { // listens for keyboard input
     case 65: // a key
       game.toggleAltTheme();
       if(game.altTheme === true) {
+        game.backgroundMusic.stop();
+        game.backgroundMusic = backgroundMusicAlt;
         game.colors = colorsAlt;
-        //game.skylineImg = skylineAlt;
         game.reset();
       } else {
+        game.backgroundMusic.stop();
+        game.backgroundMusic = backgroundMusic;
         game.colors = colors;
-        //game.skylineImg = skylineImg;
         game.reset();
       }
     default:
@@ -129,7 +136,9 @@ function renderGame() {
   game.drawSky();
   game.drawStars();
   game.drawSun();
-  game.drawSkyline();
+  if(game.altTheme === false) {
+    game.drawSkyline();
+  }
   game.drawHorizon();
   game.drawTimer();
   game.drawTriangle();
@@ -147,9 +156,9 @@ function renderGame() {
   game.checkGameOver();
   game.updateExtraLifeCounter()
   if(game.soundOn === true) {
-    backgroundMusic.play();
+    game.backgroundMusic.play();
   } else {
-    backgroundMusic.stop();
+    game.backgroundMusic.stop();
   }
 }
 
@@ -165,9 +174,9 @@ function displayNextFrame(){
     game.drawStartScreen();
     game.styleCanvasBorder();
     if(game.soundOn === true) {
-      backgroundMusic.play();
+      game.backgroundMusic.play();
     } else {
-      backgroundMusic.stop();
+      game.backgroundMusic.stop();
     }
   } else if(game.gameOver === false && game.paused === false){
     renderGame();
@@ -181,9 +190,9 @@ function displayNextFrame(){
     game.drawHorizon();
     game.drawPauseScreen();
     if(game.soundOn === true) {
-      backgroundMusic.play();
+      game.backgroundMusic.play();
     } else {
-      backgroundMusic.stop();
+      game.backgroundMusic.stop();
     }
   } else {
     game.clear();
@@ -195,9 +204,9 @@ function displayNextFrame(){
     game.drawHorizon();
     game.drawGameOver();
     if(game.soundOn === true) {
-      backgroundMusic.play();
+      game.backgroundMusic.play();
     } else {
-      backgroundMusic.stop();
+      game.backgroundMusic.stop();
     }
   }
   window.requestAnimationFrame(displayNextFrame);
