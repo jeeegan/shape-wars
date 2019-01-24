@@ -35,7 +35,7 @@ class Game {
     this.giveExtraLife = false;
     this.fireLaser = false;
     this.heroMode = false;
-  
+    this.altTheme = false;
   }
   load() {
     this.canvas.width = this.width;
@@ -89,6 +89,13 @@ class Game {
       this.heroMode = false;
     } else {
       this.heroMode = true;
+    }
+  }
+  toggleAltTheme() {
+    if(this.altTheme) {
+      this.altTheme = false;
+    } else {
+      this.altTheme = true;
     }
   }
   toggleSound() {
@@ -201,6 +208,9 @@ class Game {
       }
     }
     }
+  }
+  styleCanvasBorder() {
+    document.body.children[0].style.borderColor = this.colors.borderColor;
   }
   drawGridBackground() { // draws background underneath the grid
     this.ctx.save();

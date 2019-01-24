@@ -20,12 +20,36 @@ const colors = {
   gameOver : "#f95064", // red
   laserColor : "#18CAE6", // neon blue
 }
+const colorsAlt = {
+  gridColor1 : "black",
+  gridColor2 : "black",
+  gridColor3 : "#036", // midnight blue
+  lineColor : "red", 
+  skyColor1 : "black",
+  skyColor2 : "black", 
+  skyColor3 : "red" ,
+  sunColor1 : "red", 
+  sunColor2 : "red", // orange
+  sunColor3 : "#f07850", // orange
+  sunColor4 : "#f07850", // yellow
+  skylineShadowColor : "red", // neon pink
+  horizonColor : "red", // neon blue
+  squareColor : "#ea1136", // neon red
+  circleColor : "#39ff14", // neon green
+  triangleColor : "#e13cc0", // neon pink
+  textColor : "white", // neon blue
+  borderColor : "red", // neon pink
+  gameOver : "white", // red
+  laserColor : "#18CAE6", // neon blue
+}
 const width = 1000; // canvas width, other dimensions are on a fixed ratio of this
 const height = width * 0.6;
 const skyline = new Image();
 skyline.src = "./img/skyline.png";
 const skylineImgWidth = 0.93 * width;
 const skylineImgHeight = 0.529 * skylineImgWidth;
+const skylineAlt = new Image();
+skylineAlt.src = "./img/skylineAlt.png";
 const stars = new Image();
 stars.src = "./img/stars.png";
 const circleSound = new Sound("./sounds/circle.mp3");
@@ -81,6 +105,17 @@ function getInput(e) { // listens for keyboard input
     case 72: // h key
       game.toggleHeroMode();
       break;
+    case 65: // a key
+      game.toggleAltTheme();
+      if(game.altTheme === true) {
+        game.colors = colorsAlt;
+        //game.skylineImg = skylineAlt;
+        game.reset();
+      } else {
+        game.colors = colors;
+        //game.skylineImg = skylineImg;
+        game.reset();
+      }
     default:
       // nothing yet...
   }
@@ -128,6 +163,7 @@ function displayNextFrame(){
     game.drawStars();
     game.drawHorizon();
     game.drawStartScreen();
+    game.styleCanvasBorder();
     if(game.soundOn === true) {
       backgroundMusic.play();
     } else {
