@@ -2,7 +2,7 @@
 ## About
 Shape Wars is an 80s synthwave themed endless shooter.
 ## Requirements
-Runs best on Chrome or Firefox in full-screen (with the sound turned up). Requires a keyboard to play. Sound and fullscreen not currently supported on Safari. If you're on a Microsoft browser then good luck.
+Runs best on Chrome in full-screen (with the sound turned up). Requires a keyboard to play. Fullscreen not currently supported on Safari. Firefox performance is sub-obtimal and tends to run at a lower frame-rate affecting gameplay. If you're on a Microsoft browser then good luck.
 ## Gameplay
 The objective of the game is to stay alive for as long as possible and to collect as many points as you can. Your character is a triangle. Points are affected by:
 * Collecting a circle +5 POINTS
